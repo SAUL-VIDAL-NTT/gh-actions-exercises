@@ -1,28 +1,37 @@
-# Solución de referencia del capítulo 02.
-# Copia a .github/workflows/cap02-acciones.yml
-name: cap03 · Expresiones, contextos, variables y secretos
+# Solución de referencia del capítulo 03.
+# Copia a .github/workflows/cap03-contextos.yml
+name: cap03 · Contextos y variables
 
 on:
   push:
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    env:
-      APP: demo-build  # Variable de entorno a nivel de job
-      TEST_REPOSITORY_SECRET: ${{ secrets.TEST_REPOSITORY_SECRET }}
-      MY_REPO_VARIABLE: ${{ vars.MY_REPO_VARIABLE }}
+env:
+  PROYECTO: curso-gha          # variable de entorno a nivel workflow
 
+jobs:
+  datos:
+    runs-on: ubuntu-latest
     steps:
-      
-      - name: Imprimir el valor de la variable de entorno
-        run: echo "${{ env.APP }}" # como expresión
-      - id: calc
-        name: Calcular un resultado
-        run: echo "resultado=42" >> "$GITHUB_OUTPUT"
-      - name: Imprimir el resultado
-        run: echo "El resultado fue ${{ steps.calc.outputs.resultado }}"
-      - name: Imprimir el secreto del repositorio
-        run: echo "El secreto del repositorio es ${{ env.TEST_REPOSITORY_SECRET }}"
-      - name: Imprimir la variable del repositorio
-        run: echo "La variable del repositorio es ${{ env.MY_REPO_VARIABLE }}"
+      - name: Leer contexto github y env
+        run: |
+          echo "Proyecto: $PROYECTO"
+          echo "Actor: ${{ github.actor }}"
+          echo "Rama: ${{ github.ref_name }}"
+          echo "Evento: ${{ github.event_name }}"
+
+      - name: Generar una salida de step
+        id: calc
+        run: |
+          echo "resultado=$(( 21 * 2 ))" >> "$GITHUB_OUTPUT"
+
+      - name: Consumir la salida del step anterior
+        run: echo "El cálculo dio ${{ steps.calc.outputs.resultado }}"
+
+      - name: Usar un secreto sin imprimirlo
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}   # siempre disponible
+        run: |
+          # Solo comprobamos que existe; NUNCA lo imprimimos.
+          if [ -n "$TOKEN" ]; then
+            echo "El GITHUB_TOKEN está disponible (longitud oculta)."
+          fi
