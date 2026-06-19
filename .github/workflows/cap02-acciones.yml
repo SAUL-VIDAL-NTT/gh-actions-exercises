@@ -1,0 +1,21 @@
+# Solución de referencia del capítulo 01.
+# Copia a .github/workflows/cap01-anatomia.yml
+name: Usar acciones del Marketplace
+
+on:
+  push:
+
+
+jobs:  
+  usar-marketplace:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Usar una acción del Marketplace
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - name: Ver versión de Node.js
+        run: node --version
