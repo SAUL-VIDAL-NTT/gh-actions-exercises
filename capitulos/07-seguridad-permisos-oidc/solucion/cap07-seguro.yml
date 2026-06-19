@@ -1,0 +1,39 @@
+# Solución de referencia del capítulo 07.
+# Copia a .github/workflows/cap07-seguro.yml
+#
+# NOTA: el SHA de abajo es un ejemplo de actions/checkout v4.1.7. Antes de usarlo,
+# verifícalo tú mismo en https://github.com/actions/checkout (Tags → commit).
+name: cap07 · Workflow endurecido
+
+on:
+  push:
+
+# Menor privilegio a nivel workflow.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Acción de GitHub fijada por SHA de commit completo (inmutable).
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Construir
+        run: echo "Build seguro"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Este job amplía permisos solo para lo que necesita: pedir el token OIDC.
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Comprobar disponibilidad de OIDC
+        run: |
+          if [ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "OIDC disponible: se podría obtener un token efímero para la nube."
+          else
+            echo "OIDC no disponible en este contexto."
+          fi

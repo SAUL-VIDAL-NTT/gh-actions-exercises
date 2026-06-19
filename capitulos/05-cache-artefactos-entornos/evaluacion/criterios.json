@@ -1,0 +1,22 @@
+{
+  "capitulo": "05",
+  "archivo_entrega": ".github/workflows/cap05-datos.yml",
+  "peso_determinista": 0.6,
+  "peso_juez": 0.4,
+  "aprobado_min": 70,
+  "checks": [
+    { "id": "name", "tipo": "name_present", "puntos": 5, "desc": "Define un name" },
+    { "id": "on-push", "tipo": "trigger", "valor": "push", "puntos": 5, "desc": "Dispara en push" },
+    { "id": "concurrency", "tipo": "concurrency", "puntos": 15, "desc": "Define un bloque concurrency" },
+    { "id": "cache", "tipo": "uses_action", "valor": "actions/cache", "puntos": 20, "desc": "Usa actions/cache" },
+    { "id": "upload", "tipo": "uses_action", "valor": "actions/upload-artifact", "puntos": 20, "desc": "Usa actions/upload-artifact" },
+    { "id": "download", "tipo": "uses_action", "valor": "actions/download-artifact", "puntos": 20, "desc": "Usa actions/download-artifact" },
+    { "id": "needs", "tipo": "needs_present", "puntos": 15, "desc": "Encadena jobs con needs" }
+  ],
+  "enunciado_juez": "Crear cap05-datos.yml: bloque concurrency con cancel-in-progress; job build que usa actions/cache, genera un archivo y lo sube con upload-artifact; job consumir que needs build y usa download-artifact.",
+  "rubrica_llm": [
+    { "nombre": "Caché bien diseñada", "peso": 35, "guia": "La key usa runner.os y hashFiles de un archivo de dependencias; restore-keys razonable." },
+    { "nombre": "Artefactos consistentes", "peso": 40, "guia": "El name del artefacto en upload y download coincide; los paths tienen sentido; el consumo es real." },
+    { "nombre": "Concurrencia y estructura", "peso": 25, "guia": "group de concurrency basado en workflow/ref; jobs separados y encadenados con needs." }
+  ]
+}

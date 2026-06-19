@@ -1,0 +1,59 @@
+# Solución de referencia del capítulo 09.
+# Copia a .github/workflows/cap09-juez.yml
+name: cap09 · Juez LLM
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  evaluar-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      models: read              # imprescindible para GitHub Models
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar el prompt (rúbrica + README)
+        run: |
+          {
+            echo "## RÚBRICA"
+            echo "- Claridad (peso 40): ¿se entiende para qué sirve y cómo empezar?"
+            echo "- Completitud (peso 35): ¿cubre instalación, uso y estructura?"
+            echo "- Estructura (peso 25): ¿títulos, listas y orden lógico?"
+            echo ""
+            echo "## README A EVALUAR"
+            echo '```markdown'
+            cat README.md
+            echo '```'
+            echo ""
+            echo "Devuelve SOLO el objeto JSON pedido."
+          } > prompt.md
+
+      - name: Juez LLM (GitHub Models)
+        id: juez
+        continue-on-error: true
+        uses: actions/ai-inference@v1
+        with:
+          model: openai/gpt-4o-mini
+          temperature: "0.1"
+          max-completion-tokens: 800
+          system-prompt: |
+            Eres un evaluador técnico estricto y consistente. Calificas un README
+            contra una rúbrica. Responde EXCLUSIVAMENTE con un JSON válido con la forma:
+            {"criterios":[{"nombre":"...","peso":0,"puntuacion":0,"justificacion":"..."}],
+             "puntuacion_global":0,"comentario":"..."}
+          prompt-file: prompt.md
+
+      - name: Reportar resultado
+        if: always()
+        run: |
+          echo "## 🧑‍⚖️ Evaluación del README por el juez LLM" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.juez.outputs.response }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

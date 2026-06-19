@@ -1,0 +1,23 @@
+{
+  "capitulo": "10",
+  "archivo_entrega": ".github/workflows/cap10-pipeline.yml",
+  "peso_determinista": 0.6,
+  "peso_juez": 0.4,
+  "aprobado_min": 70,
+  "checks": [
+    { "id": "name", "tipo": "name_present", "puntos": 5, "desc": "Define un name" },
+    { "id": "on-pr", "tipo": "trigger", "valor": "pull_request", "puntos": 5, "desc": "Dispara en pull_request" },
+    { "id": "models-read", "tipo": "permission", "valor": "models:read", "puntos": 15, "desc": "Declara models: read" },
+    { "id": "pr-write", "tipo": "permission", "valor": "pull-requests:write", "puntos": 15, "desc": "Declara pull-requests: write" },
+    { "id": "ai-inference", "tipo": "uses_action", "valor": "actions/ai-inference", "puntos": 20, "desc": "Incluye un juez LLM (ai-inference)" },
+    { "id": "run", "tipo": "run_present", "puntos": 10, "desc": "Tiene lógica determinista / de combinación (run)" },
+    { "id": "comentario", "tipo": "regex", "valor": "(createComment|github-script|gh pr comment|issues\\.createComment)", "puntos": 20, "desc": "Comenta la nota en el PR" },
+    { "id": "summary", "tipo": "regex", "valor": "GITHUB_STEP_SUMMARY", "puntos": 10, "desc": "Reporta también en el resumen del run" }
+  ],
+  "enunciado_juez": "Crear cap10-pipeline.yml: pipeline que combina evaluación determinista + juez LLM (actions/ai-inference) en una nota ponderada, con permisos models:read y pull-requests:write, que comenta la nota en el PR y reporta en el summary; degradación elegante si Models falla.",
+  "rubrica_llm": [
+    { "nombre": "Arquitectura del pipeline", "peso": 40, "guia": "Etapas claras (determinista → juez → combinar → reportar), pesos explícitos, encadenado coherente (needs o steps ordenados)." },
+    { "nombre": "Robustez y degradación", "peso": 30, "guia": "Maneja el fallo del juez (continue-on-error) y aún produce nota; permisos mínimos por job; auditabilidad (artefactos)." },
+    { "nombre": "Feedback accionable", "peso": 30, "guia": "El comentario en el PR y el resumen explican la nota y qué mejorar; idealmente comentario idempotente." }
+  ]
+}

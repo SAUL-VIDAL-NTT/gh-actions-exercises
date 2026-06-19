@@ -1,0 +1,14 @@
+# Solución de referencia del capítulo 00.
+# Para usarla, cópiala a .github/workflows/cap00-hola.yml
+name: cap00 · Hola Mundo
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  saludar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Saludar
+        run: echo "¡Hola, GitHub Actions! Soy mi primer workflow."

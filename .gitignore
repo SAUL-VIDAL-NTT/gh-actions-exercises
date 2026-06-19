@@ -1,0 +1,13 @@
+# Archivos generados por el evaluador en tiempo de ejecución
+resultado-determinista.json
+respuesta-juez.txt
+nota-final.json
+comentario-pr.md
+comentario.md
+juez-user.md
+prompt.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/

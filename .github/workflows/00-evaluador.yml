@@ -1,0 +1,146 @@
+name: 00 · Evaluador del curso
+
+# Califica automáticamente tus entregas combinando:
+#   1) pruebas DETERMINISTAS (evaluador/calificar.py)
+#   2) un JUEZ LLM con GitHub Models (actions/ai-inference)
+# Se ejecuta al hacer push o abrir/actualizar un PR, y también a mano.
+
+on:
+  push:
+    branches-ignore: []
+    paths:
+      - ".github/workflows/cap*.yml"
+      - "capitulos/**/evaluacion/criterios.json"
+      - "evaluador/**"
+  pull_request:
+    paths:
+      - ".github/workflows/cap*.yml"
+  workflow_dispatch:
+    inputs:
+      capitulo:
+        description: "Prefijo del capítulo a evaluar (p.ej. 03). Vacío = todos los que tengan entrega."
+        required: false
+        default: ""
+
+# Permisos mínimos a nivel de workflow (principio de menor privilegio).
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: descubre qué capítulos tienen entrega y arma la matriz.
+  # ---------------------------------------------------------------------------
+  descubrir:
+    runs-on: ubuntu-latest
+    outputs:
+      lista: ${{ steps.scan.outputs.lista }}
+      hay: ${{ steps.scan.outputs.hay }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Descubrir capítulos con entrega
+        id: scan
+        env:
+          CAP_FILTRO: ${{ github.event.inputs.capitulo }}
+        run: python evaluador/descubrir.py
+
+  # ---------------------------------------------------------------------------
+  # Job 2: evalúa cada capítulo de la matriz (determinista + juez LLM).
+  # ---------------------------------------------------------------------------
+  evaluar:
+    needs: descubrir
+    if: needs.descubrir.outputs.hay == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      models: read            # necesario para invocar GitHub Models
+      pull-requests: write    # para dejar el comentario con la nota en PRs
+    strategy:
+      fail-fast: false
+      max-parallel: 1         # evita saturar el límite de uso de GitHub Models
+      matrix:
+        cap: ${{ fromJSON(needs.descubrir.outputs.lista) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install pyyaml
+
+      # --- 1) Evaluación determinista ---
+      - name: Evaluación determinista
+        id: det
+        run: |
+          python evaluador/calificar.py "${{ matrix.cap }}/evaluacion/criterios.json" \
+            --salida resultado-determinista.json
+
+      # --- 2) Preparar el prompt del juez ---
+      - name: Preparar prompt del juez
+        run: |
+          python evaluador/preparar_juez.py \
+            "${{ matrix.cap }}/evaluacion/criterios.json" juez-user.md
+
+      # --- 3) Juez LLM con GitHub Models (oficial) ---
+      - name: Juez LLM (GitHub Models)
+        id: juez
+        continue-on-error: true   # si Models no está disponible, seguimos con la parte determinista
+        uses: actions/ai-inference@v1
+        with:
+          model: openai/gpt-4o-mini
+          system-prompt-file: evaluador/llm-judge/juez.system.md
+          prompt-file: juez-user.md
+          max-completion-tokens: 1200
+
+      - name: Guardar respuesta del juez
+        if: always()
+        run: |
+          if [ -n "${{ steps.juez.outputs.response-file }}" ] && [ -f "${{ steps.juez.outputs.response-file }}" ]; then
+            cp "${{ steps.juez.outputs.response-file }}" respuesta-juez.txt
+          else
+            printf '%s' "${{ steps.juez.outputs.response }}" > respuesta-juez.txt
+          fi
+          echo "----- respuesta cruda del juez -----"
+          cat respuesta-juez.txt || true
+
+      # --- 4) Combinar y calcular nota final ---
+      - name: Combinar resultados
+        run: |
+          python evaluador/combinar.py \
+            --criterios "${{ matrix.cap }}/evaluacion/criterios.json" \
+            --determinista resultado-determinista.json \
+            --juez respuesta-juez.txt \
+            --salida nota-final.json
+
+      # --- 5) Adjuntar el detalle como artefacto descargable ---
+      - name: Subir reporte
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nota-${{ github.run_id }}-${{ strategy.job-index }}
+          path: |
+            resultado-determinista.json
+            respuesta-juez.txt
+            nota-final.json
+          if-no-files-found: warn
+
+      # --- 6) En PRs, comentar la nota ---
+      - name: Comentar nota en el PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const cuerpo = fs.readFileSync('comentario-pr.md', 'utf8');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `### Capítulo \`${{ matrix.cap }}\`\n\n${cuerpo}`,
+            });

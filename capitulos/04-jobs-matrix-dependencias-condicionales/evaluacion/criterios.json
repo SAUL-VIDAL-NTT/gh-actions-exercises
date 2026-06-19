@@ -1,0 +1,21 @@
+{
+  "capitulo": "04",
+  "archivo_entrega": ".github/workflows/cap04-flujo.yml",
+  "peso_determinista": 0.6,
+  "peso_juez": 0.4,
+  "aprobado_min": 70,
+  "checks": [
+    { "id": "name", "tipo": "name_present", "puntos": 5, "desc": "Define un name" },
+    { "id": "on-push", "tipo": "trigger", "valor": "push", "puntos": 10, "desc": "Dispara en push" },
+    { "id": "outputs", "tipo": "outputs_present", "puntos": 25, "desc": "Algún job declara outputs" },
+    { "id": "needs", "tipo": "needs_present", "puntos": 20, "desc": "Usa needs entre jobs" },
+    { "id": "matrix", "tipo": "matrix_min", "valor": 3, "puntos": 25, "desc": "Matriz con al menos 3 valores" },
+    { "id": "if", "tipo": "if_present", "puntos": 15, "desc": "Usa al menos un condicional if" }
+  ],
+  "enunciado_juez": "Crear cap04-flujo.yml: job 'preparar' con outputs desde una salida de step; job de matriz (>=3 valores) que depende (needs) de preparar; al menos un if.",
+  "rubrica_llm": [
+    { "nombre": "Orquestación con needs/outputs", "peso": 40, "guia": "El paso de datos entre jobs usa needs.<job>.outputs correctamente; las dependencias tienen sentido." },
+    { "nombre": "Uso de la matriz", "peso": 35, "guia": "La matriz es coherente (p.ej. versiones); uso razonado de fail-fast; runs-on/with consumen matrix.*." },
+    { "nombre": "Condicionales con sentido", "peso": 25, "guia": "Los if expresan intención clara (p.ej. solo en main o solo en push)." }
+  ]
+}

@@ -1,0 +1,50 @@
+# Solución de referencia del capítulo 08.
+# Copia a .github/workflows/cap08-gate.yml
+name: cap08 · Gate determinista
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  evaluar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Aserciones sobre el repositorio
+        run: |
+          set -euo pipefail
+          echo "## Resultado del gate" >> "$GITHUB_STEP_SUMMARY"
+
+          # Aserción 1: existe README.md
+          if test -f README.md; then
+            echo "- README.md existe ✅" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- README.md existe ❌" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error file=README.md::Falta README.md"
+            exit 1
+          fi
+
+          # Aserción 2: el README menciona Actions
+          if grep -q "Actions" README.md; then
+            echo "- README menciona 'Actions' ✅" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- README menciona 'Actions' ❌" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          # Generar reporte para el artefacto
+          mkdir -p reporte
+          cp "$GITHUB_STEP_SUMMARY" reporte/resumen.md
+
+      - name: Subir reporte
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-gate
+          path: reporte/
+          if-no-files-found: warn

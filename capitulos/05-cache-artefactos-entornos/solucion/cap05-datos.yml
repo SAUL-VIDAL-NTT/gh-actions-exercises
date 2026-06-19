@@ -1,0 +1,47 @@
+# Solución de referencia del capítulo 05.
+# Copia a .github/workflows/cap05-datos.yml
+name: cap05 · Caché y artefactos
+
+on:
+  push:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cachear dependencias de pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+
+      - name: Generar artefacto
+        run: |
+          mkdir -p dist
+          echo "Build del commit ${{ github.sha }}" > dist/reporte.txt
+
+      - name: Subir artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte
+          path: dist/
+
+  consumir:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar artefacto
+        uses: actions/download-artifact@v4
+        with:
+          name: reporte
+
+      - name: Usar el artefacto
+        run: cat reporte.txt

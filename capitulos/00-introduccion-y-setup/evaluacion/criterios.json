@@ -1,0 +1,21 @@
+{
+  "capitulo": "00",
+  "archivo_entrega": ".github/workflows/cap00-hola.yml",
+  "peso_determinista": 0.6,
+  "peso_juez": 0.4,
+  "aprobado_min": 70,
+  "checks": [
+    { "id": "name", "tipo": "name_present", "puntos": 15, "desc": "Define un name de workflow" },
+    { "id": "on-push", "tipo": "trigger", "valor": "push", "puntos": 15, "desc": "Se dispara en push" },
+    { "id": "on-dispatch", "tipo": "trigger", "valor": "workflow_dispatch", "puntos": 20, "desc": "Se dispara manualmente (workflow_dispatch)" },
+    { "id": "job", "tipo": "min_jobs", "valor": 1, "puntos": 15, "desc": "Tiene al menos 1 job" },
+    { "id": "ubuntu", "tipo": "runs_on_regex", "valor": "ubuntu", "puntos": 20, "desc": "El job corre en un runner Ubuntu" },
+    { "id": "run", "tipo": "run_present", "puntos": 15, "desc": "Tiene al menos un step con run" }
+  ],
+  "enunciado_juez": "Crear .github/workflows/cap00-hola.yml: name descriptivo; dispara en push y workflow_dispatch; un job en runner Ubuntu; al menos un step run que imprime un saludo.",
+  "rubrica_llm": [
+    { "nombre": "Cumple el enunciado", "peso": 40, "guia": "El workflow hace lo pedido: dispara en push y manual, corre en Ubuntu e imprime un saludo." },
+    { "nombre": "Claridad y nombres", "peso": 35, "guia": "Nombres de workflow, job y steps descriptivos; estructura legible y bien indentada." },
+    { "nombre": "Idiomática", "peso": 25, "guia": "Usa la sintaxis de forma natural y sin elementos innecesarios para el nivel introductorio." }
+  ]
+}

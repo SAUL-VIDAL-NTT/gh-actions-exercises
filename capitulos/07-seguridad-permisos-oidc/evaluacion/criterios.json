@@ -1,0 +1,21 @@
+{
+  "capitulo": "07",
+  "archivo_entrega": ".github/workflows/cap07-seguro.yml",
+  "peso_determinista": 0.6,
+  "peso_juez": 0.4,
+  "aprobado_min": 70,
+  "checks": [
+    { "id": "name", "tipo": "name_present", "puntos": 5, "desc": "Define un name" },
+    { "id": "on-push", "tipo": "trigger", "valor": "push", "puntos": 5, "desc": "Dispara en push" },
+    { "id": "contents-read", "tipo": "permission", "valor": "contents:read", "puntos": 20, "desc": "Declara permissions contents: read" },
+    { "id": "id-token", "tipo": "permission", "valor": "id-token:write", "puntos": 25, "desc": "Un job declara id-token: write (OIDC)" },
+    { "id": "sha-pin", "tipo": "regex", "valor": "uses:.*@[0-9a-fA-F]{40}", "puntos": 30, "desc": "Al menos una acción fijada por SHA de 40 hex" },
+    { "id": "no-main", "tipo": "not_regex", "valor": "uses:.*@(main|master)\\b", "puntos": 15, "desc": "No usa @main / @master" }
+  ],
+  "enunciado_juez": "Crear cap07-seguro.yml: permissions contents: read a nivel workflow; job con id-token: write (OIDC); al menos una acción fijada por SHA de 40 caracteres; sin referencias @main/@master; sin patrones de inyección de scripts.",
+  "rubrica_llm": [
+    { "nombre": "Menor privilegio", "peso": 40, "guia": "Permisos mínimos a nivel workflow y ampliados solo donde hacen falta por job; no hay write-all innecesario." },
+    { "nombre": "Pinning y procedencia", "peso": 35, "guia": "Acciones de terceros fijadas por SHA con comentario de versión; evita ramas móviles." },
+    { "nombre": "Sin inyección de scripts", "peso": 25, "guia": "Las entradas no confiables (títulos, ramas externas) no se interpolan directamente en run; se pasan por env." }
+  ]
+}

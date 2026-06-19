@@ -1,0 +1,18 @@
+# Llamador de ejemplo (bonus). Copia a .github/workflows/cap06-llamador.yml
+name: cap06 · Llamador
+
+on:
+  push:
+
+jobs:
+  usar:
+    uses: ./.github/workflows/cap06-reusable.yml
+    with:
+      entorno: staging
+      ejecutar-tests: true
+
+  mostrar:
+    needs: usar
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "El reutilizable devolvió -> ${{ needs.usar.outputs.resultado }}"'

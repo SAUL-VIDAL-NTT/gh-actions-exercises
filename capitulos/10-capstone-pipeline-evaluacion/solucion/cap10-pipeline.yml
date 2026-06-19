@@ -1,0 +1,108 @@
+# Solución de referencia del capítulo 10 (capstone).
+# Copia a .github/workflows/cap10-pipeline.yml
+name: cap10 · Pipeline de evaluación
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  evaluar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      models: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- 1) Evaluación determinista: produce det_pct (0-100) ---
+      - name: Evaluación determinista
+        id: det
+        run: |
+          set -uo pipefail
+          puntos=0; total=0
+          check() {  # check "descripcion" <comando...>
+            total=$((total+1)); desc="$1"; shift
+            if "$@" >/dev/null 2>&1; then
+              puntos=$((puntos+1)); echo "- $desc ✅" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "- $desc ❌" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          }
+          echo "## Determinista" >> "$GITHUB_STEP_SUMMARY"
+          check "Existe README.md" test -f README.md
+          check "README menciona Actions" grep -q "Actions" README.md
+          det_pct=$(( total>0 ? 100*puntos/total : 0 ))
+          echo "det_pct=$det_pct" >> "$GITHUB_OUTPUT"
+
+      # --- 2) Juez LLM ---
+      - name: Preparar prompt
+        run: |
+          {
+            echo "Rúbrica: claridad (50), completitud (50)."
+            echo "Evalúa este README y responde SOLO JSON {\"puntuacion_global\":0-100,\"comentario\":\"...\"}:"
+            echo '```'
+            cat README.md
+            echo '```'
+          } > prompt.md
+
+      - name: Juez LLM (GitHub Models)
+        id: juez
+        continue-on-error: true
+        uses: actions/ai-inference@v1
+        with:
+          model: openai/gpt-4o-mini
+          temperature: "0.1"
+          max-completion-tokens: 600
+          system-prompt: "Eres un evaluador. Responde solo con JSON válido."
+          prompt-file: prompt.md
+
+      # --- 3) Combinar en nota final ---
+      - name: Combinar
+        id: combinar
+        env:
+          DET_PCT: ${{ steps.det.outputs.det_pct }}
+          JUEZ_RAW: ${{ steps.juez.outputs.response }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          det = float(os.environ.get("DET_PCT", "0") or 0)
+          raw = os.environ.get("JUEZ_RAW", "") or ""
+          m = re.search(r"\{.*\}", raw, re.DOTALL)
+          juez = {}
+          if m:
+              try: juez = json.loads(m.group(0))
+              except Exception: juez = {}
+          juez_pct = float(juez.get("puntuacion_global", 0)) if juez else 0.0
+          if juez:
+              nota = round(0.6*det + 0.4*juez_pct, 1)
+              detalle = f"Determinista {det} · Juez {juez_pct}"
+          else:
+              nota = round(det, 1)
+              detalle = f"Determinista {det} · Juez no disponible"
+          comentario = juez.get("comentario", "") if juez else ""
+          cuerpo = f"## 🏁 Nota final: {nota}/100\n\n{detalle}\n\n{comentario}\n"
+          with open("comentario.md","w",encoding="utf-8") as f: f.write(cuerpo)
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as f: f.write(cuerpo)
+          with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as f: f.write(f"nota={nota}\n")
+          print(cuerpo)
+          PY
+
+      # --- 4) Comentar en el PR ---
+      - name: Comentar nota en el PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('comentario.md', 'utf8');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

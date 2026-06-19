@@ -1,0 +1,21 @@
+{
+  "capitulo": "02",
+  "archivo_entrega": ".github/workflows/cap02-acciones.yml",
+  "peso_determinista": 0.6,
+  "peso_juez": 0.4,
+  "aprobado_min": 70,
+  "checks": [
+    { "id": "name", "tipo": "name_present", "puntos": 10, "desc": "Define un name" },
+    { "id": "on-push", "tipo": "trigger", "valor": "push", "puntos": 10, "desc": "Dispara en push" },
+    { "id": "checkout", "tipo": "uses_action", "valor": "actions/checkout", "puntos": 20, "desc": "Usa actions/checkout" },
+    { "id": "setup", "tipo": "uses_action", "valor": "actions/setup-", "puntos": 25, "desc": "Usa una acción actions/setup-*" },
+    { "id": "with", "tipo": "regex", "valor": "(?m)^\\s*with:", "puntos": 20, "desc": "Incluye un bloque with:" },
+    { "id": "run", "tipo": "run_present", "puntos": 15, "desc": "Tiene al menos un step run" }
+  ],
+  "enunciado_juez": "Crear cap02-acciones.yml: usar actions/checkout y actions/setup-python (o setup-node) con bloque with para fijar versión; ejecutar el runtime instalado en un step run.",
+  "rubrica_llm": [
+    { "nombre": "Versionado de acciones", "peso": 35, "guia": "Las acciones se fijan a una versión (p.ej. @v4), no a @main ni sin referencia." },
+    { "nombre": "Uso coherente del runtime", "peso": 35, "guia": "El step run usa el runtime instalado por setup-*; la versión pedida en with es razonable." },
+    { "nombre": "Orden y claridad", "peso": 30, "guia": "checkout antes de usar el código; steps con name; estructura limpia." }
+  ]
+}

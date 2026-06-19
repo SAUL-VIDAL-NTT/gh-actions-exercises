@@ -1,0 +1,37 @@
+# Solución de referencia del capítulo 03.
+# Copia a .github/workflows/cap03-contextos.yml
+name: cap03 · Contextos y variables
+
+on:
+  push:
+
+env:
+  PROYECTO: curso-gha          # variable de entorno a nivel workflow
+
+jobs:
+  datos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Leer contexto github y env
+        run: |
+          echo "Proyecto: $PROYECTO"
+          echo "Actor: ${{ github.actor }}"
+          echo "Rama: ${{ github.ref_name }}"
+          echo "Evento: ${{ github.event_name }}"
+
+      - name: Generar una salida de step
+        id: calc
+        run: |
+          echo "resultado=$(( 21 * 2 ))" >> "$GITHUB_OUTPUT"
+
+      - name: Consumir la salida del step anterior
+        run: echo "El cálculo dio ${{ steps.calc.outputs.resultado }}"
+
+      - name: Usar un secreto sin imprimirlo
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}   # siempre disponible
+        run: |
+          # Solo comprobamos que existe; NUNCA lo imprimimos.
+          if [ -n "$TOKEN" ]; then
+            echo "El GITHUB_TOKEN está disponible (longitud oculta)."
+          fi

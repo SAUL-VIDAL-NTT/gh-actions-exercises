@@ -1,0 +1,22 @@
+{
+  "capitulo": "01",
+  "archivo_entrega": ".github/workflows/cap01-anatomia.yml",
+  "peso_determinista": 0.6,
+  "peso_juez": 0.4,
+  "aprobado_min": 70,
+  "checks": [
+    { "id": "name", "tipo": "name_present", "puntos": 10, "desc": "Define un name" },
+    { "id": "on-push", "tipo": "trigger", "valor": "push", "puntos": 15, "desc": "Dispara en push" },
+    { "id": "on-pr", "tipo": "trigger", "valor": "pull_request", "puntos": 15, "desc": "Dispara en pull_request" },
+    { "id": "dos-jobs", "tipo": "min_jobs", "valor": 2, "puntos": 20, "desc": "Tiene al menos 2 jobs" },
+    { "id": "ubuntu", "tipo": "runs_on_regex", "valor": "ubuntu", "puntos": 15, "desc": "Corre en Ubuntu" },
+    { "id": "checkout", "tipo": "uses_action", "valor": "actions/checkout", "puntos": 15, "desc": "Usa actions/checkout" },
+    { "id": "run", "tipo": "run_present", "puntos": 10, "desc": "Tiene al menos un step run" }
+  ],
+  "enunciado_juez": "Crear cap01-anatomia.yml: name; dispara en push y pull_request; al menos 2 jobs en Ubuntu; usar actions/checkout como primer step; steps con name y un run multilínea.",
+  "rubrica_llm": [
+    { "nombre": "Estructura de jobs/steps", "peso": 40, "guia": "Jobs bien separados con responsabilidades claras; steps ordenados y con name." },
+    { "nombre": "Uso correcto de checkout", "peso": 30, "guia": "checkout aparece como primer step donde se necesita el código; versión fijada (p.ej. @v4)." },
+    { "nombre": "Claridad general", "peso": 30, "guia": "Nombres descriptivos, indentación correcta, sin redundancias." }
+  ]
+}

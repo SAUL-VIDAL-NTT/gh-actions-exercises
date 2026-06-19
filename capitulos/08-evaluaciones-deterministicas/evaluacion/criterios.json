@@ -1,0 +1,21 @@
+{
+  "capitulo": "08",
+  "archivo_entrega": ".github/workflows/cap08-gate.yml",
+  "peso_determinista": 0.6,
+  "peso_juez": 0.4,
+  "aprobado_min": 70,
+  "checks": [
+    { "id": "name", "tipo": "name_present", "puntos": 5, "desc": "Define un name" },
+    { "id": "on-pr", "tipo": "trigger", "valor": "pull_request", "puntos": 10, "desc": "Dispara en pull_request" },
+    { "id": "run", "tipo": "run_present", "puntos": 15, "desc": "Tiene steps run" },
+    { "id": "summary", "tipo": "regex", "valor": "GITHUB_STEP_SUMMARY", "puntos": 25, "desc": "Escribe en $GITHUB_STEP_SUMMARY" },
+    { "id": "aserciones", "tipo": "regex", "valor": "(set -e|grep |test |\\[\\[? )", "puntos": 25, "desc": "Incluye aserciones reales" },
+    { "id": "artifact", "tipo": "uses_action", "valor": "actions/upload-artifact", "puntos": 20, "desc": "Sube un artefacto con el reporte" }
+  ],
+  "enunciado_juez": "Crear cap08-gate.yml: gate determinista que dispara en push y pull_request, ejecuta aserciones (set -e/test/grep) que hacen fallar el job si no se cumplen, escribe un resumen en $GITHUB_STEP_SUMMARY y sube un artefacto.",
+  "rubrica_llm": [
+    { "nombre": "Aserciones significativas", "peso": 45, "guia": "Las comprobaciones prueban algo real y útil; usan set -e o equivalentes para fallar de verdad cuando no se cumplen." },
+    { "nombre": "Reporte claro", "peso": 30, "guia": "El resumen en $GITHUB_STEP_SUMMARY es legible (Markdown) e informa del resultado de cada check." },
+    { "nombre": "Robustez", "peso": 25, "guia": "Maneja fallos correctamente (no enmascara errores), y sube el artefacto incluso ante fallo si procede (if: always())." }
+  ]
+}

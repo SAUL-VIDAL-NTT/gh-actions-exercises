@@ -1,0 +1,34 @@
+# Solución de referencia del capítulo 06 (workflow reutilizable).
+# Copia a .github/workflows/cap06-reusable.yml
+name: cap06 · CI reutilizable
+
+on:
+  workflow_call:
+    inputs:
+      entorno:
+        description: Entorno objetivo
+        required: true
+        type: string
+      ejecutar-tests:
+        description: Si se corren los tests
+        required: false
+        type: boolean
+        default: true
+    outputs:
+      resultado:
+        description: Resultado de la ejecución
+        value: ${{ jobs.run.outputs.resultado }}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    outputs:
+      resultado: ${{ steps.s.outputs.r }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: s
+        name: Ejecutar para el entorno solicitado
+        run: |
+          echo "Entorno: ${{ inputs.entorno }}"
+          echo "¿Tests?: ${{ inputs.ejecutar-tests }}"
+          echo "r=ok-${{ inputs.entorno }}" >> "$GITHUB_OUTPUT"

@@ -1,0 +1,21 @@
+{
+  "capitulo": "06",
+  "archivo_entrega": ".github/workflows/cap06-reusable.yml",
+  "peso_determinista": 0.6,
+  "peso_juez": 0.4,
+  "aprobado_min": 70,
+  "checks": [
+    { "id": "name", "tipo": "name_present", "puntos": 10, "desc": "Define un name" },
+    { "id": "workflow-call", "tipo": "workflow_call", "puntos": 30, "desc": "Se dispara con workflow_call" },
+    { "id": "inputs", "tipo": "regex", "valor": "(?m)^\\s*inputs:", "puntos": 20, "desc": "Declara un bloque inputs" },
+    { "id": "usa-input", "tipo": "regex", "valor": "inputs\\.", "puntos": 20, "desc": "Usa el input (inputs.)" },
+    { "id": "job", "tipo": "min_jobs", "valor": 1, "puntos": 10, "desc": "Tiene al menos 1 job" },
+    { "id": "run", "tipo": "run_present", "puntos": 10, "desc": "Tiene al menos un step run" }
+  ],
+  "enunciado_juez": "Crear cap06-reusable.yml: workflow reutilizable con on.workflow_call, al menos un input, y un job que usa ${{ inputs.* }}.",
+  "rubrica_llm": [
+    { "nombre": "Diseño reutilizable", "peso": 40, "guia": "La interfaz workflow_call es clara y genérica; los inputs parametrizan de verdad el comportamiento." },
+    { "nombre": "Inputs bien definidos", "peso": 35, "guia": "Cada input declara type y required (y default si aplica); nombres descriptivos." },
+    { "nombre": "Coherencia general", "peso": 25, "guia": "El job usa los inputs correctamente; si hay outputs/secrets, están bien cableados." }
+  ]
+}

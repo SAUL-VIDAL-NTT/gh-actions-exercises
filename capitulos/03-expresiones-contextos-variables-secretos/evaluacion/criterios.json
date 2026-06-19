@@ -1,0 +1,22 @@
+{
+  "capitulo": "03",
+  "archivo_entrega": ".github/workflows/cap03-contextos.yml",
+  "peso_determinista": 0.6,
+  "peso_juez": 0.4,
+  "aprobado_min": 70,
+  "checks": [
+    { "id": "name", "tipo": "name_present", "puntos": 5, "desc": "Define un name" },
+    { "id": "on-push", "tipo": "trigger", "valor": "push", "puntos": 10, "desc": "Dispara en push" },
+    { "id": "env", "tipo": "env_present", "puntos": 15, "desc": "Define un bloque env" },
+    { "id": "expr", "tipo": "regex", "valor": "\\$\\{\\{", "puntos": 15, "desc": "Usa una expresión ${{ }}" },
+    { "id": "ctx-github", "tipo": "regex", "valor": "github\\.", "puntos": 20, "desc": "Lee el contexto github" },
+    { "id": "output", "tipo": "regex", "valor": "GITHUB_OUTPUT", "puntos": 20, "desc": "Genera una salida de step ($GITHUB_OUTPUT)" },
+    { "id": "secret-var", "tipo": "regex", "valor": "(secrets|vars)\\.", "puntos": 15, "desc": "Referencia secrets.* o vars.*" }
+  ],
+  "enunciado_juez": "Crear cap03-contextos.yml: bloque env; expresión ${{ }} que lee el contexto github; salida de step via $GITHUB_OUTPUT consumida por otro step; referencia a secrets.* o vars.* sin imprimir el secreto.",
+  "rubrica_llm": [
+    { "nombre": "Manejo seguro de secretos", "peso": 40, "guia": "El secreto NO se imprime (no aparece en un echo directo); se pasa por env o se usa en un comando. Penaliza fuerte si se filtra." },
+    { "nombre": "Uso idiomático de contextos/expresiones", "peso": 35, "guia": "Distingue bien cuándo usar ${{ }} (expresión) vs variables de shell ($VAR); contextos correctos." },
+    { "nombre": "Flujo de datos claro", "peso": 25, "guia": "La salida de step se define y consume correctamente con un id y steps.<id>.outputs.<nombre>." }
+  ]
+}

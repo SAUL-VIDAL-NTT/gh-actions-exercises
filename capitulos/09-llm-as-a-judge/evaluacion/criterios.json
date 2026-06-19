@@ -1,0 +1,21 @@
+{
+  "capitulo": "09",
+  "archivo_entrega": ".github/workflows/cap09-juez.yml",
+  "peso_determinista": 0.6,
+  "peso_juez": 0.4,
+  "aprobado_min": 70,
+  "checks": [
+    { "id": "name", "tipo": "name_present", "puntos": 5, "desc": "Define un name" },
+    { "id": "models-read", "tipo": "permission", "valor": "models:read", "puntos": 25, "desc": "El job declara models: read" },
+    { "id": "ai-inference", "tipo": "uses_action", "valor": "actions/ai-inference", "puntos": 30, "desc": "Usa actions/ai-inference" },
+    { "id": "prompt", "tipo": "regex", "valor": "(system-prompt|prompt):", "puntos": 15, "desc": "Pasa system-prompt y/o prompt" },
+    { "id": "response", "tipo": "regex", "valor": "outputs\\.response", "puntos": 10, "desc": "Lee la salida response del juez" },
+    { "id": "summary", "tipo": "regex", "valor": "GITHUB_STEP_SUMMARY", "puntos": 15, "desc": "Escribe el resultado en el resumen" }
+  ],
+  "enunciado_juez": "Crear cap09-juez.yml: workflow con permissions models: read que usa actions/ai-inference con un system-prompt de evaluador (salida JSON) y un prompt con rúbrica; lee outputs.response y lo escribe en $GITHUB_STEP_SUMMARY.",
+  "rubrica_llm": [
+    { "nombre": "Calidad de la rúbrica y el prompt", "peso": 45, "guia": "El system prompt fija rol y formato JSON; el prompt incluye una rúbrica con criterios y pesos claros; pide justificación." },
+    { "nombre": "Robustez del juez", "peso": 30, "guia": "Maneja el fallo de Models (continue-on-error), serializa llamadas si hay varias, parámetros razonables (temperature baja, max tokens)." },
+    { "nombre": "Integración del resultado", "peso": 25, "guia": "La respuesta se lee y se reporta de forma útil (resumen/artefacto); idealmente se parsea el JSON." }
+  ]
+}
