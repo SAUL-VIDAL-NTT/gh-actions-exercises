@@ -13,9 +13,12 @@ jobs:
       - name: Clonar el repositorio
         uses: actions/checkout@v4
 
-      - name: Usar una acción del Marketplace
-        uses: actions/setup-node@v3
+      - name: Configurar Python
+        uses: actions/setup-python@v5
         with:
-          node-version: "18"
-      - name: Ver versión de Node.js
-        run: node --version
+          python-version: "3.12"
+
+      - name: Usar el runtime instalado
+        run: |
+          python --version
+          python -c "print('Hola desde Python en el runner')"
