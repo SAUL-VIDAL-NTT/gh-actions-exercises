@@ -1,0 +1,41 @@
+# Solución de referencia del capítulo 04.
+# Copia a .github/workflows/cap04-flujo.yml
+name: cap04 · Flujo de jobs
+
+on:
+  push:
+
+jobs:
+  preparar:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - id: v
+        name: Calcular versión
+        run: echo "version=1.4.0" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: preparar
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Mostrar contexto de matriz y salida de job
+        run: |
+          echo "Probando con Python ${{ matrix.python }}"
+          echo "Versión preparada: ${{ needs.preparar.outputs.version }}"
+
+  desplegar:
+    needs: [preparar, test]   # incluye preparar para poder leer su output
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Simular despliegue (solo en main)
+        run: echo "Desplegando versión ${{ needs.preparar.outputs.version }}…"
